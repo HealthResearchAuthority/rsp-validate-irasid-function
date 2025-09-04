@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
+  },
+  "ConnectionStrings": {
+    "HarpProjectDataConnectionString": "Server=(localdb)\\MSSQLLocalDB;Database=HarpProjectData;Trusted_Connection=True;"
+  }
+}
