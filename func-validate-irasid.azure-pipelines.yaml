@@ -91,7 +91,7 @@ stages:
     variables:
       - group: 'DataWarehouseEnvironment'
       - name: FunctionAppName
-        value: "fnrspvalidateIRASID"
+        value: "func-validate-irasid"
     condition: eq('${{ parameters.skip_deployment }}', 'false')
     jobs:
       - template: jobs/deployFunction.yaml@library
