@@ -9,6 +9,7 @@ using ValidateIrasId.Application.Contracts.Services;
 using ValidateIrasId.Infrastructure;
 using ValidateIrasId.Infrastructure.Repositories;
 using ValidateIrasId.Services;
+using ValidateIrasId.Startup.Extensions;
 
 namespace ValidateIrasId.Startup;
 
@@ -39,6 +40,8 @@ public static class Program
         builder.Services.AddHttpContextAccessor();
 
         var app = builder.Build();
+
+        await app.MigrateAndSeedDatabaseAsync();
 
         await app.RunAsync();
     }
