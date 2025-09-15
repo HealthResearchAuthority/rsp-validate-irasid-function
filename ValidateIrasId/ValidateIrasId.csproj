@@ -12,6 +12,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.3.0" />
     <!-- Application Insights isn't enabled by default. See https://aka.ms/AAt8mw4. -->
     <!-- <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" /> -->
     <!-- <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" /> -->
@@ -30,6 +32,9 @@
     <PackageReference Include="XunitXml.TestLogger" Version="6.1.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\rsp-service-defaults\src\Rsp.ServiceDefaults\Rsp.ServiceDefaults.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -44,4 +49,5 @@
   <ItemGroup>
     <Folder Include="Infrastructure\Migrations\" />
   </ItemGroup>
+
 </Project>
