@@ -57,7 +57,7 @@ public static class Program
         builder.Services.AddMemoryCache();
         builder.Services.AddDbContext<HarpProjectDataDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("validateIRASIDDatabaseConnection"));
+            options.UseSqlServer(configuration.GetConnectionString("HarpProjectDataConnectionString"));
         });
 
         builder.Services.AddScoped<IHarpProjectDataRepository, HarpProjectDataRepository>();
