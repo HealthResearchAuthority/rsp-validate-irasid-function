@@ -10,6 +10,7 @@ using Rsp.ValidateIRASID.Application.Configuration;
 using Rsp.ValidateIRASID.Application.Constants;
 using ValidateIrasId.Application.Contracts.Repositories;
 using ValidateIrasId.Application.Contracts.Services;
+using ValidateIrasId.Functions;
 using ValidateIrasId.Infrastructure;
 using ValidateIrasId.Infrastructure.Repositories;
 using ValidateIrasId.Services;
@@ -62,6 +63,7 @@ public static class Program
 
         builder.Services.AddScoped<IHarpProjectDataRepository, HarpProjectDataRepository>();
         builder.Services.AddScoped<IValidateIrasIdService, ValidateIrasIdService>();
+        builder.Services.AddScoped<ValidateIrasIdFunction>();
 
         builder.Services.AddHttpContextAccessor();
 
