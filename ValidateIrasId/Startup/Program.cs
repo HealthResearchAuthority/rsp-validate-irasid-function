@@ -14,6 +14,7 @@ using ValidateIrasId.Functions;
 using ValidateIrasId.Infrastructure;
 using ValidateIrasId.Infrastructure.Repositories;
 using ValidateIrasId.Services;
+using ValidateIrasId.Startup.Configuration;
 using ValidateIrasId.Startup.Extensions;
 
 namespace Rsp.ValidateIRASID;
@@ -26,7 +27,6 @@ public static class Program
         var builder = FunctionsApplication.CreateBuilder(args);
         builder.ConfigureFunctionsWebApplication();
 
-        var configuration = builder.Configuration;
         var config = builder.Configuration;
 
         config
@@ -37,7 +37,7 @@ public static class Program
 
         if (!builder.Environment.IsDevelopment())
         {
-            var azureAppConfigSection = configuration.GetSection(nameof(AppSettings));
+            var azureAppConfigSection = config.GetSection(nameof(AppSettings));
             var azureAppConfiguration = azureAppConfigSection.Get<AppSettings>();
 
             // Load configuration from Azure App Configuration
@@ -51,14 +51,14 @@ public static class Program
                     .Select(KeyFilter.Any);
             });
 
-            builder.Services.AddAzureAppConfiguration();
+            builder.Services.AddAzureAppConfiguration(config);
         }
 
         // register dependencies
         builder.Services.AddMemoryCache();
         builder.Services.AddDbContext<HarpProjectDataDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("HarpProjectDataConnectionString"));
+            options.UseSqlServer(config.GetConnectionString("HarpProjectDataConnectionString"));
         });
 
         builder.Services.AddScoped<IHarpProjectDataRepository, HarpProjectDataRepository>();

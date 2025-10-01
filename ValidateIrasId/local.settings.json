@@ -6,5 +6,11 @@
   },
   "ConnectionStrings": {
     "HarpProjectDataConnectionString": "Server=(localdb)\\MSSQLLocalDB;Database=HarpProjectData;Trusted_Connection=True;"
+  },
+  "AppSettings": {
+    "AzureAppConfiguration": {
+      "Endpoint": "",
+      "IdentityClientID": ""
+    }
   }
 }
