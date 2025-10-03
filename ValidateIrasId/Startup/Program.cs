@@ -57,7 +57,6 @@ public static class Program
 
         await app.MigrateAndSeedDatabaseAsync();
 
-        HttpClient.DefaultProxy = new WebProxy();
         await app.RunAsync();
     }
 }
