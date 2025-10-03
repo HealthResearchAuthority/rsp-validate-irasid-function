@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -56,6 +57,7 @@ public static class Program
 
         await app.MigrateAndSeedDatabaseAsync();
 
+        HttpClient.DefaultProxy = new WebProxy();
         await app.RunAsync();
     }
 }
