@@ -27,7 +27,10 @@ public class ValidateIrasIdFunctionTests
 
         var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
         Assert.Equal(HttpStatusCode.BadRequest, fakeResponse.StatusCode);
-        Assert.Contains("Missing or invalid 'irasId'", fakeResponse.GetBodyAsString());
+
+        var responseBody = fakeResponse.GetBodyAsString();
+        Assert.Contains("\"Status\":\"BadRequest\"", responseBody);
+        Assert.Contains("Missing or invalid", responseBody);
     }
 
     [Fact]
@@ -36,7 +39,7 @@ public class ValidateIrasIdFunctionTests
         var loggerMock = new Mock<ILogger<ValidateIrasIdFunction>>();
         var serviceMock = new Mock<IValidateIrasIdService>();
         serviceMock.Setup(r => r.GetRecordByIrasIdAsync(It.IsAny<int>()))
-                .ReturnsAsync((HarpProjectRecord?)null);
+                   .ReturnsAsync((HarpProjectRecordDataDTO?)null);
 
         var function = new ValidateIrasIdFunction(loggerMock.Object, serviceMock.Object);
 
@@ -47,46 +50,47 @@ public class ValidateIrasIdFunctionTests
 
         var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
         Assert.Equal(HttpStatusCode.NotFound, fakeResponse.StatusCode);
-        Assert.Contains("No record found for IRAS ID: 999999", fakeResponse.GetBodyAsString());
+
+        var responseBody = fakeResponse.GetBodyAsString();
+        Assert.Contains("\"Status\":\"NotFound\"", responseBody);
+        Assert.Contains("No record found for IRAS ID: 999999", responseBody);
     }
 
     [Fact]
     public async Task Run_ReturnsOk_WhenRecordExists()
     {
-        // Arrange
         var loggerMock = new Mock<ILogger<ValidateIrasIdFunction>>();
         var serviceMock = new Mock<IValidateIrasIdService>();
 
-        var testRecord = new HarpProjectRecord
+        var testRecord = new HarpProjectRecordDataDTO
         {
-            IrasId = 123456,
+            IRASID = 123456,
             RecID = 316,
             RecName = "Test Committee",
-            ShortStudyTitle = "Test Study",
-            StudyDecision = "Favourable Opinion",
-            DateRegistered = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-            FullResearchTitle = "Full Research Title Example"
+            ShortProjectTitle = "Test Study",
+            LongProjectTitle = "Full Research Title Example"
         };
 
         serviceMock.Setup(r => r.GetRecordByIrasIdAsync(123456))
-                .ReturnsAsync(testRecord);
+                   .ReturnsAsync(testRecord);
 
         var function = new ValidateIrasIdFunction(loggerMock.Object, serviceMock.Object);
 
         var contextMock = new Mock<FunctionContext>();
         var request = new FakeHttpRequestData(contextMock.Object, new Uri("http://localhost/api?irasId=123456"));
 
-        // Act
         var response = await function.Run(request);
 
-        // Assert
         var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
         Assert.Equal(HttpStatusCode.OK, fakeResponse.StatusCode);
         Assert.Equal("application/json", fakeResponse.Headers.GetValues("Content-Type").FirstOrDefault());
 
         var responseBody = fakeResponse.GetBodyAsString();
-        Assert.Contains("\"IrasId\":123456", responseBody);
+        Assert.Contains("\"Status\":\"Success\"", responseBody);
+        Assert.Contains("\"IRASID\":123456", responseBody);
         Assert.Contains("\"RecName\":\"Test Committee\"", responseBody);
+        Assert.Contains("\"ShortProjectTitle\":\"Test Study\"", responseBody);
+        Assert.Contains("\"LongProjectTitle\":\"Full Research Title Example\"", responseBody);
     }
 }
 

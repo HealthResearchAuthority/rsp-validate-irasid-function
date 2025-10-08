@@ -16,10 +16,23 @@ namespace ValidateIrasId.Services
             _repository = repository;
         }
 
-        public async Task<HarpProjectRecord?> GetRecordByIrasIdAsync(int irasId)
+        public async Task<HarpProjectRecordDataDTO?> GetRecordByIrasIdAsync(int irasId)
         {
             _logger.LogInformation("Fetching record for IRAS ID: {IrasId}", irasId);
-            return await _repository.GetRecordByIrasIdAsync(irasId);
+
+            var record = await _repository.GetRecordByIrasIdAsync(irasId);
+
+            if (record is null)
+                return null;
+
+            return new HarpProjectRecordDataDTO
+            {
+                IRASID = record.IrasId,
+                RecID = record.RecID,
+                RecName = record.RecName,
+                ShortProjectTitle = record.ShortStudyTitle,
+                LongProjectTitle = record.FullResearchTitle
+            };
         }
     }
 }
