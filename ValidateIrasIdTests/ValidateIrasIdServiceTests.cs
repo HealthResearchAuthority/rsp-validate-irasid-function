@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
+using Shouldly;
 using ValidateIrasId.Application.Contracts.Repositories;
 using ValidateIrasId.Application.DTO;
 using ValidateIrasId.Services;
@@ -44,12 +45,12 @@ public class ValidateIrasIdServiceTests
         var result = await _service.GetRecordByIrasIdAsync(irasId);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(record.IrasId, result.IRASID);
-        Assert.Equal(record.RecID, result.RecID);
-        Assert.Equal(record.RecName, result.RecName);
-        Assert.Equal(record.ShortStudyTitle, result.ShortProjectTitle);
-        Assert.Equal(record.FullResearchTitle, result.LongProjectTitle);
+        result.ShouldNotBeNull();
+        result.IRASID.ShouldBe(record.IrasId);
+        result.RecID.ShouldBe(record.RecID);
+        result.RecName.ShouldBe(record.RecName);
+        result.ShortProjectTitle.ShouldBe(record.ShortStudyTitle);
+        result.LongProjectTitle.ShouldBe(record.FullResearchTitle);
     }
 
     [Fact]
@@ -65,7 +66,7 @@ public class ValidateIrasIdServiceTests
         var result = await _service.GetRecordByIrasIdAsync(irasId);
 
         // Assert
-        Assert.Null(result);
+        result.ShouldBeNull();
     }
 
     [Fact]

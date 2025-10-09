@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Shouldly;
 using ValidateIrasId.Application.Contracts.Services;
 using ValidateIrasId.Application.DTO;
 using ValidateIrasId.Functions;
@@ -25,12 +26,12 @@ public class ValidateIrasIdFunctionTests
 
         var response = await function.Run(request);
 
-        var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        Assert.Equal(HttpStatusCode.BadRequest, fakeResponse.StatusCode);
+        var fakeResponse = response.ShouldBeOfType<FakeHttpResponseData>();
+        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var responseBody = fakeResponse.GetBodyAsString();
-        Assert.Contains("\"Status\":\"BadRequest\"", responseBody);
-        Assert.Contains("Missing or invalid", responseBody);
+        responseBody.ShouldContain("\"Status\":\"BadRequest\"");
+        responseBody.ShouldContain("Missing or invalid");
     }
 
     [Fact]
@@ -49,11 +50,11 @@ public class ValidateIrasIdFunctionTests
         var response = await function.Run(request);
 
         var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        Assert.Equal(HttpStatusCode.NotFound, fakeResponse.StatusCode);
+        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
         var responseBody = fakeResponse.GetBodyAsString();
-        Assert.Contains("\"Status\":\"NotFound\"", responseBody);
-        Assert.Contains("No record found for IRAS ID: 999999", responseBody);
+        responseBody.ShouldContain("\"Status\":\"NotFound\"");
+        responseBody.ShouldContain("No record found for IRAS ID: 999999");
     }
 
     [Fact]
@@ -82,15 +83,15 @@ public class ValidateIrasIdFunctionTests
         var response = await function.Run(request);
 
         var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        Assert.Equal(HttpStatusCode.OK, fakeResponse.StatusCode);
-        Assert.Equal("application/json", fakeResponse.Headers.GetValues("Content-Type").FirstOrDefault());
+        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        fakeResponse.Headers.GetValues("Content-Type").FirstOrDefault().ShouldBe("application/json");
 
         var responseBody = fakeResponse.GetBodyAsString();
-        Assert.Contains("\"Status\":\"Success\"", responseBody);
-        Assert.Contains("\"IRASID\":123456", responseBody);
-        Assert.Contains("\"RecName\":\"Test Committee\"", responseBody);
-        Assert.Contains("\"ShortProjectTitle\":\"Test Study\"", responseBody);
-        Assert.Contains("\"LongProjectTitle\":\"Full Research Title Example\"", responseBody);
+        responseBody.ShouldContain("\"Status\":\"Success\"");
+        responseBody.ShouldContain("\"IRASID\":123456");
+        responseBody.ShouldContain("\"RecName\":\"Test Committee\"");
+        responseBody.ShouldContain("\"ShortProjectTitle\":\"Test Study\"");
+        responseBody.ShouldContain("\"LongProjectTitle\":\"Full Research Title Example\"");
     }
 }
 

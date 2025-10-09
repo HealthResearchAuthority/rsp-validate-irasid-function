@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Shouldly;
 using ValidateIrasId.Application.DTO;
 using ValidateIrasId.Infrastructure;
 using ValidateIrasId.Infrastructure.Repositories;
@@ -61,15 +62,15 @@ public class HarpProjectDataRepositoryTests
         var result = await _repository.GetRecordByIrasIdAsync(45655);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("abc123", result!.Id);
-        Assert.Equal(45655, result.IrasId);
-        Assert.Equal(789, result.RecID);
-        Assert.Equal("Dr. Test", result.RecName);
-        Assert.Equal("Short Title", result.ShortStudyTitle);
-        Assert.Equal("Approved", result.StudyDecision);
-        Assert.Equal(new DateTime(2023, 5, 10, 0, 0, 0, DateTimeKind.Utc), result.DateRegistered);
-        Assert.Equal("Full Title of the Research Study", result.FullResearchTitle);
+        result.ShouldNotBeNull();
+        result!.Id.ShouldBe("abc123");
+        result.IrasId.ShouldBe(45655);
+        result.RecID.ShouldBe(789);
+        result.RecName.ShouldBe("Dr. Test");
+        result.ShortStudyTitle.ShouldBe("Short Title");
+        result.StudyDecision.ShouldBe("Approved");
+        result.DateRegistered.ShouldBe(new DateTime(2023, 5, 10, 0, 0, 0, DateTimeKind.Utc));
+        result.FullResearchTitle.ShouldBe("Full Title of the Research Study");
     }
 
     [Fact]
@@ -79,15 +80,15 @@ public class HarpProjectDataRepositoryTests
         var result = await _repository.GetRecordByIrasIdAsync(99955);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("def456", result!.Id);
-        Assert.Equal(99955, result.IrasId);
-        Assert.Null(result.RecID);
-        Assert.Null(result.RecName);
-        Assert.Null(result.ShortStudyTitle);
-        Assert.Null(result.StudyDecision);
-        Assert.Equal(new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Utc), result.DateRegistered);
-        Assert.Null(result.FullResearchTitle);
+        result.ShouldNotBeNull();
+        result!.Id.ShouldBe("def456");
+        result.IrasId.ShouldBe(99955);
+        result.RecID.ShouldBeNull();
+        result.RecName.ShouldBeNull();
+        result.ShortStudyTitle.ShouldBeNull();
+        result.StudyDecision.ShouldBeNull();
+        result.DateRegistered.ShouldBe(new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        result.FullResearchTitle.ShouldBeNull();
     }
 
     [Fact]
@@ -97,6 +98,6 @@ public class HarpProjectDataRepositoryTests
         var result = await _repository.GetRecordByIrasIdAsync(9999999);
 
         // Assert
-        Assert.Null(result);
+        result.ShouldBeNull();
     }
 }
