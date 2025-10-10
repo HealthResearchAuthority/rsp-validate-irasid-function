@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
+using Shouldly;
 using ValidateIrasId.Application.Contracts.Repositories;
 using ValidateIrasId.Application.DTO;
 using ValidateIrasId.Services;
@@ -20,11 +21,11 @@ public class ValidateIrasIdServiceTests
     }
 
     [Fact]
-    public async Task GetRecordByIrasIdAsync_ReturnsRecord_WhenExists()
+    public async Task GetRecordByIrasIdAsync_ReturnsDTO_WhenRecordExists()
     {
         // Arrange
         var irasId = 1234;
-        var expectedRecord = new HarpProjectRecord
+        var record = new HarpProjectRecord
         {
             Id = "abc",
             IrasId = irasId,
@@ -38,19 +39,22 @@ public class ValidateIrasIdServiceTests
 
         _repositoryMock
             .Setup(r => r.GetRecordByIrasIdAsync(irasId))
-            .ReturnsAsync(expectedRecord);
+            .ReturnsAsync(record);
 
         // Act
         var result = await _service.GetRecordByIrasIdAsync(irasId);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(expectedRecord.IrasId, result!.IrasId);
-        Assert.Equal(expectedRecord.RecName, result.RecName);
+        result.ShouldNotBeNull();
+        result.IRASID.ShouldBe(record.IrasId);
+        result.RecID.ShouldBe(record.RecID);
+        result.RecName.ShouldBe(record.RecName);
+        result.ShortProjectTitle.ShouldBe(record.ShortStudyTitle);
+        result.LongProjectTitle.ShouldBe(record.FullResearchTitle);
     }
 
     [Fact]
-    public async Task GetRecordByIrasIdAsync_ReturnsNull_WhenNotFound()
+    public async Task GetRecordByIrasIdAsync_ReturnsNull_WhenRecordNotFound()
     {
         // Arrange
         var irasId = 999;
@@ -62,7 +66,7 @@ public class ValidateIrasIdServiceTests
         var result = await _service.GetRecordByIrasIdAsync(irasId);
 
         // Assert
-        Assert.Null(result);
+        result.ShouldBeNull();
     }
 
     [Fact]
@@ -70,9 +74,16 @@ public class ValidateIrasIdServiceTests
     {
         // Arrange
         var irasId = 123;
+        var record = new HarpProjectRecord
+        {
+            IrasId = irasId,
+            FullResearchTitle = "Title",
+            ShortStudyTitle = "Short"
+        };
+
         _repositoryMock
             .Setup(r => r.GetRecordByIrasIdAsync(irasId))
-            .ReturnsAsync(new HarpProjectRecord { IrasId = irasId });
+            .ReturnsAsync(record);
 
         // Act
         await _service.GetRecordByIrasIdAsync(irasId);

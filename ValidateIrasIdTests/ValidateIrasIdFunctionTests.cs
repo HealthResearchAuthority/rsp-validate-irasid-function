@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Shouldly;
 using ValidateIrasId.Application.Contracts.Services;
 using ValidateIrasId.Application.DTO;
 using ValidateIrasId.Functions;
@@ -25,9 +26,12 @@ public class ValidateIrasIdFunctionTests
 
         var response = await function.Run(request);
 
-        var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        Assert.Equal(HttpStatusCode.BadRequest, fakeResponse.StatusCode);
-        Assert.Contains("Missing or invalid 'irasId'", fakeResponse.GetBodyAsString());
+        var fakeResponse = response.ShouldBeOfType<FakeHttpResponseData>();
+        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        var responseBody = fakeResponse.GetBodyAsString();
+        responseBody.ShouldContain("\"Status\":\"BadRequest\"");
+        responseBody.ShouldContain("Missing or invalid");
     }
 
     [Fact]
@@ -36,7 +40,7 @@ public class ValidateIrasIdFunctionTests
         var loggerMock = new Mock<ILogger<ValidateIrasIdFunction>>();
         var serviceMock = new Mock<IValidateIrasIdService>();
         serviceMock.Setup(r => r.GetRecordByIrasIdAsync(It.IsAny<int>()))
-                .ReturnsAsync((HarpProjectRecord?)null);
+                   .ReturnsAsync((HarpProjectRecordDataDTO?)null);
 
         var function = new ValidateIrasIdFunction(loggerMock.Object, serviceMock.Object);
 
@@ -46,47 +50,48 @@ public class ValidateIrasIdFunctionTests
         var response = await function.Run(request);
 
         var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        Assert.Equal(HttpStatusCode.NotFound, fakeResponse.StatusCode);
-        Assert.Contains("No record found for IRAS ID: 999999", fakeResponse.GetBodyAsString());
+        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+
+        var responseBody = fakeResponse.GetBodyAsString();
+        responseBody.ShouldContain("\"Status\":\"NotFound\"");
+        responseBody.ShouldContain("No record found for IRAS ID: 999999");
     }
 
     [Fact]
     public async Task Run_ReturnsOk_WhenRecordExists()
     {
-        // Arrange
         var loggerMock = new Mock<ILogger<ValidateIrasIdFunction>>();
         var serviceMock = new Mock<IValidateIrasIdService>();
 
-        var testRecord = new HarpProjectRecord
+        var testRecord = new HarpProjectRecordDataDTO
         {
-            IrasId = 123456,
+            IRASID = 123456,
             RecID = 316,
             RecName = "Test Committee",
-            ShortStudyTitle = "Test Study",
-            StudyDecision = "Favourable Opinion",
-            DateRegistered = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-            FullResearchTitle = "Full Research Title Example"
+            ShortProjectTitle = "Test Study",
+            LongProjectTitle = "Full Research Title Example"
         };
 
         serviceMock.Setup(r => r.GetRecordByIrasIdAsync(123456))
-                .ReturnsAsync(testRecord);
+                   .ReturnsAsync(testRecord);
 
         var function = new ValidateIrasIdFunction(loggerMock.Object, serviceMock.Object);
 
         var contextMock = new Mock<FunctionContext>();
         var request = new FakeHttpRequestData(contextMock.Object, new Uri("http://localhost/api?irasId=123456"));
 
-        // Act
         var response = await function.Run(request);
 
-        // Assert
         var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        Assert.Equal(HttpStatusCode.OK, fakeResponse.StatusCode);
-        Assert.Equal("application/json", fakeResponse.Headers.GetValues("Content-Type").FirstOrDefault());
+        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        fakeResponse.Headers.GetValues("Content-Type").FirstOrDefault().ShouldBe("application/json");
 
         var responseBody = fakeResponse.GetBodyAsString();
-        Assert.Contains("\"IrasId\":123456", responseBody);
-        Assert.Contains("\"RecName\":\"Test Committee\"", responseBody);
+        responseBody.ShouldContain("\"Status\":\"Success\"");
+        responseBody.ShouldContain("\"IRASID\":123456");
+        responseBody.ShouldContain("\"RecName\":\"Test Committee\"");
+        responseBody.ShouldContain("\"ShortProjectTitle\":\"Test Study\"");
+        responseBody.ShouldContain("\"LongProjectTitle\":\"Full Research Title Example\"");
     }
 }
 

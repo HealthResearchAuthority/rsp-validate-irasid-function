@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using ValidateIrasId.Application.Contracts.Services;
+using ValidateIrasId.Application.DTO;
 
 namespace ValidateIrasId.Functions;
 
@@ -22,11 +23,21 @@ public class ValidateIrasIdFunction
     public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
     {
         var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
-        if (!int.TryParse(query["irasId"], out int irasId))
+        string? irasIdKey = query.AllKeys.FirstOrDefault(k => string.Equals(k, "irasId", StringComparison.OrdinalIgnoreCase));
+
+        var responseObj = new ValidateIrasIdResponse
+        {
+            TimeStamp = DateTime.UtcNow
+        };
+
+        if (!int.TryParse(query[irasIdKey], out int irasId))
         {
             _logger.LogWarning("Invalid or missing 'irasId' parameter in request: {Url}", req.Url);
+            responseObj.Status = "BadRequest";
+            responseObj.Error = "Missing or invalid 'irasId' parameter.";
+
             var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await badResponse.WriteStringAsync("Missing or invalid 'irasId' parameter.");
+            await badResponse.WriteStringAsync(JsonSerializer.Serialize(responseObj));
             return badResponse;
         }
 
@@ -34,14 +45,20 @@ public class ValidateIrasIdFunction
 
         if (record is null)
         {
+            responseObj.Status = "NotFound";
+            responseObj.Error = $"No record found for IRAS ID: {irasId}";
+
             var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
-            await notFoundResponse.WriteStringAsync($"No record found for IRAS ID: {irasId}");
+            await notFoundResponse.WriteStringAsync(JsonSerializer.Serialize(responseObj));
             return notFoundResponse;
         }
 
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add("Content-Type", "application/json");
-        await response.WriteStringAsync(JsonSerializer.Serialize(record));
-        return response;
+        responseObj.Status = "Success";
+        responseObj.Data = record;
+
+        var okResponse = req.CreateResponse(HttpStatusCode.OK);
+        okResponse.Headers.Add("Content-Type", "application/json");
+        await okResponse.WriteStringAsync(JsonSerializer.Serialize(responseObj));
+        return okResponse;
     }
 }
