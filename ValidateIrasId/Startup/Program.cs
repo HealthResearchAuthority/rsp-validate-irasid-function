@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
+using System.Reflection;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,34 +23,35 @@ public static class Program
     public static async Task Main(string[] args)
     {
         var builder = FunctionsApplication.CreateBuilder(args);
+
         builder.ConfigureFunctionsWebApplication();
 
         var config = builder.Configuration;
+        var services = builder.Services;
 
-        config
-            .AddJsonFile("local.settings.json", true)
-            .AddEnvironmentVariables();
+        config.AddEnvironmentVariables();
 
-        builder.Services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
+        services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
         // register dependencies
-        builder.Services.AddMemoryCache();
-        builder.Services.AddDbContext<HarpProjectDataDbContext>(options =>
+        services.AddMemoryCache();
+        services.AddDbContext<HarpProjectDataDbContext>(options =>
         {
             options.UseSqlServer(config.GetConnectionString("HarpProjectDataConnectionString"));
         });
 
-        builder.Services.AddScoped<IHarpProjectDataRepository, HarpProjectDataRepository>();
-        builder.Services.AddScoped<IValidateIrasIdService, ValidateIrasIdService>();
-        builder.Services.AddScoped<ValidateIrasIdFunction>();
+        services.AddScoped<IHarpProjectDataRepository, HarpProjectDataRepository>();
+        services.AddScoped<IValidateIrasIdService, ValidateIrasIdService>();
+        services.AddScoped<ValidateIrasIdFunction>();
 
-        builder.Services.AddHttpContextAccessor();
+        services.AddHttpContextAccessor();
 
         if (!builder.Environment.IsDevelopment())
         {
             // Load configuration from Azure App Configuration
 
-            builder.Services.AddAzureAppConfiguration(config);
+            services.AddAzureAppConfiguration(config);
+            builder.Configuration.AddUserSecrets(Assembly.GetAssembly(typeof(Program))!);
         }
 
         var app = builder.Build();

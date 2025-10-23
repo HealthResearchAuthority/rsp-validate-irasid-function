@@ -1,9 +1,7 @@
-﻿using System.Net;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
+﻿using System.Web;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Shouldly;
 using ValidateIrasId.Application.Contracts.Services;
@@ -12,57 +10,52 @@ using ValidateIrasId.Functions;
 
 namespace ValidateIrasIdTests;
 
-public class ValidateIrasIdFunctionTests
+public class ValidateIrasIdFunctionTests : TestServiceBase<ValidateIrasIdFunction>
 {
     [Fact]
     public async Task Run_ReturnsBadRequest_WhenIrasIdIsMissing()
     {
-        var loggerMock = new Mock<ILogger<ValidateIrasIdFunction>>();
-        var serviceMock = new Mock<IValidateIrasIdService>();
-        var function = new ValidateIrasIdFunction(loggerMock.Object, serviceMock.Object);
+        var request = GenerateHttpRequest(new Uri("http://localhost/api?wrongParam=123"));
 
-        var contextMock = new Mock<FunctionContext>();
-        var request = new FakeHttpRequestData(contextMock.Object, new Uri("http://localhost/api?wrongParam=123"));
+        var response = await Sut.Run(request, request.Query["irasId"]);
 
-        var response = await function.Run(request);
+        var result = response.ShouldBeOfType<BadRequestObjectResult>();
 
-        var fakeResponse = response.ShouldBeOfType<FakeHttpResponseData>();
-        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        result.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        var model = result.Value
+            .ShouldNotBeNull()
+            .ShouldBeOfType<ProjectRecordValidationResponse>();
 
-        var responseBody = fakeResponse.GetBodyAsString();
-        responseBody.ShouldContain("\"Status\":\"BadRequest\"");
-        responseBody.ShouldContain("Missing or invalid");
+        model.Error.ShouldBe("Missing or invalid 'irasId' parameter.");
+        model.Data.ShouldBeNull();
     }
 
     [Fact]
     public async Task Run_ReturnsNotFound_WhenRecordDoesNotExist()
     {
-        var loggerMock = new Mock<ILogger<ValidateIrasIdFunction>>();
-        var serviceMock = new Mock<IValidateIrasIdService>();
-        serviceMock.Setup(r => r.GetRecordByIrasIdAsync(It.IsAny<int>()))
-                   .ReturnsAsync((HarpProjectRecordDataDTO?)null);
+        var serviceMock = Mocker.GetMock<IValidateIrasIdService>();
+        serviceMock
+            .Setup(r => r.GetRecordByIrasIdAsync(It.IsAny<int>()))
+            .ReturnsAsync((HarpProjectRecordDataDTO?)null);
 
-        var function = new ValidateIrasIdFunction(loggerMock.Object, serviceMock.Object);
+        var request = GenerateHttpRequest(new Uri("http://localhost/api?irasId=999999"));
 
-        var contextMock = new Mock<FunctionContext>();
-        var request = new FakeHttpRequestData(contextMock.Object, new Uri("http://localhost/api?irasId=999999"));
+        var response = await Sut.Run(request, request.Query["irasId"]);
 
-        var response = await function.Run(request);
+        var result = response.ShouldBeOfType<NotFoundObjectResult>();
 
-        var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        result.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+        var model = result.Value
+            .ShouldNotBeNull()
+            .ShouldBeOfType<ProjectRecordValidationResponse>();
 
-        var responseBody = fakeResponse.GetBodyAsString();
-        responseBody.ShouldContain("\"Status\":\"NotFound\"");
-        responseBody.ShouldContain("No record found for IRAS ID: 999999");
+        model.Error.ShouldBe("No record found for IRAS ID: 999999");
+        model.Data.ShouldBeNull();
     }
 
     [Fact]
     public async Task Run_ReturnsOk_WhenRecordExists()
     {
-        var loggerMock = new Mock<ILogger<ValidateIrasIdFunction>>();
-        var serviceMock = new Mock<IValidateIrasIdService>();
-
         var testRecord = new HarpProjectRecordDataDTO
         {
             IRASID = 123456,
@@ -72,83 +65,48 @@ public class ValidateIrasIdFunctionTests
             LongProjectTitle = "Full Research Title Example"
         };
 
-        serviceMock.Setup(r => r.GetRecordByIrasIdAsync(123456))
-                   .ReturnsAsync(testRecord);
+        var serviceMock = Mocker.GetMock<IValidateIrasIdService>();
+        serviceMock
+            .Setup(r => r.GetRecordByIrasIdAsync(123456))
+            .ReturnsAsync(testRecord);
 
-        var function = new ValidateIrasIdFunction(loggerMock.Object, serviceMock.Object);
+        var request = GenerateHttpRequest(new Uri("http://localhost/api?irasId=123456"));
 
-        var contextMock = new Mock<FunctionContext>();
-        var request = new FakeHttpRequestData(contextMock.Object, new Uri("http://localhost/api?irasId=123456"));
+        var response = await Sut.Run(request, request.Query["irasId"]);
 
-        var response = await function.Run(request);
+        var result = response.ShouldBeOfType<OkObjectResult>();
 
-        var fakeResponse = Assert.IsType<FakeHttpResponseData>(response);
-        fakeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        fakeResponse.Headers.GetValues("Content-Type").FirstOrDefault().ShouldBe("application/json");
+        result.StatusCode.ShouldBe(StatusCodes.Status200OK);
+        var model = result.Value
+            .ShouldNotBeNull()
+            .ShouldBeOfType<ProjectRecordValidationResponse>();
 
-        var responseBody = fakeResponse.GetBodyAsString();
-        responseBody.ShouldContain("\"Status\":\"Success\"");
-        responseBody.ShouldContain("\"IRASID\":123456");
-        responseBody.ShouldContain("\"RecName\":\"Test Committee\"");
-        responseBody.ShouldContain("\"ShortProjectTitle\":\"Test Study\"");
-        responseBody.ShouldContain("\"LongProjectTitle\":\"Full Research Title Example\"");
-    }
-}
-
-public class FakeHttpResponseData : HttpResponseData
-{
-    private readonly MemoryStream _bodyStream = new MemoryStream();
-
-    public FakeHttpResponseData(FunctionContext req, HttpStatusCode statusCode) : base(req)
-    {
-        StatusCode = statusCode;
-        Headers = new HttpHeadersCollection();
-        Body = _bodyStream;
+        model.Data.ShouldNotBeNull();
+        model.Data.IRASID.ShouldBe(testRecord.IRASID);
+        model.Data.RecID.ShouldBe(testRecord.RecID);
+        model.Data.RecName.ShouldBe(testRecord.RecName);
+        model.Data.ShortProjectTitle.ShouldBe(testRecord.ShortProjectTitle);
+        model.Data.LongProjectTitle.ShouldBe(testRecord.LongProjectTitle);
     }
 
-    public override HttpStatusCode StatusCode { get; set; }
-    public override HttpHeadersCollection Headers { get; set; }
-    public override Stream Body { get; set; }
-    public override HttpCookies Cookies => null;
-
-    public async Task WriteStringAsync(string value)
+    private static HttpRequest GenerateHttpRequest(Uri uri)
     {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        await Body.WriteAsync(bytes, 0, bytes.Length);
-        Body.Position = 0;
-    }
+        var context = new DefaultHttpContext();
+        var request = context.Request;
 
-    public string GetBodyAsString()
-    {
-        Body.Position = 0;
-        return new StreamReader(Body).ReadToEnd();
-    }
-}
+        request.Scheme = uri.Scheme;
+        request.Host = new HostString(uri.Host, uri.Port);
+        request.Path = uri.PathAndQuery;
 
-public class FakeHttpRequestData : HttpRequestData
-{
-    public FakeHttpRequestData(FunctionContext context, Uri uri, HttpStatusCode statusCode = HttpStatusCode.OK) : base(context)
-    {
-        Url = uri;
-        Headers = new HttpHeadersCollection();
-        Body = new MemoryStream();
-        StatusCode = statusCode;
-    }
+        var parameters = new Dictionary<string, StringValues>();
+        var queryParams = HttpUtility.ParseQueryString(uri.Query.TrimStart('?'));
 
-    public override Stream Body { get; }
-    public override HttpHeadersCollection Headers { get; }
-    public override Uri Url { get; }
+        foreach (string key in queryParams)
+        {
+            parameters.Add(key, queryParams[key]);
+        }
 
-    public override string Method => "GET";
-
-    public HttpStatusCode StatusCode { get; set; }
-
-    public override IEnumerable<ClaimsIdentity> Identities => Array.Empty<ClaimsIdentity>();
-
-    public override IReadOnlyCollection<IHttpCookie> Cookies => Array.Empty<IHttpCookie>();
-
-    public override HttpResponseData CreateResponse()
-    {
-        return new FakeHttpResponseData(FunctionContext, StatusCode);
+        request.Query = new QueryCollection(parameters);
+        return request;
     }
 }
