@@ -66,12 +66,6 @@ resources:
       endpoint: AzureDevOpsToGitHubConnection
       ref: ${{ parameters.devops_library_branch }}
 
-    - repository: service_defaults
-      type: github
-      name: 'HealthResearchAuthority/rsp-service-defaults'
-      endpoint: AzureDevOpsToGitHubConnection
-      ref: main
-
 stages:
   - stage: Build
     displayName: "Build Stage"
@@ -83,8 +77,6 @@ stages:
           sonar_project_key: HealthResearchAuthority_rsp-validate-irasid-function
           sonar_project_name: rsp-validate-irasid-function
           run_sonarcloud_analysis: ${{ parameters.run_sonarcloud_analysis }}
-          install_aspire: true
-          service_defaults_repo: service_defaults
 
   - stage: DataWarehouse
     displayName: "Deploy to DataWarehouse"
@@ -96,6 +88,4 @@ stages:
     jobs:
       - template: jobs/deployFunction.yaml@library
         parameters:
-          install_aspire: true
-          service_defaults_repo: service_defaults
           appSettings: $(appSettingsJson)

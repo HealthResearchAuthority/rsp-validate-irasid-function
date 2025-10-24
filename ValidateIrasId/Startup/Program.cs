@@ -29,6 +29,17 @@ public static class Program
         var config = builder.Configuration;
         var services = builder.Services;
 
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Configuration.AddUserSecrets(Assembly.GetAssembly(typeof(Program))!);
+        }
+
+        if (!builder.Environment.IsDevelopment())
+        {
+            // Load configuration from Azure App Configuration
+            services.AddAzureAppConfiguration(config);
+        }
+
         config.AddEnvironmentVariables();
 
         services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
@@ -45,14 +56,6 @@ public static class Program
         services.AddScoped<ValidateIrasIdFunction>();
 
         services.AddHttpContextAccessor();
-
-        if (!builder.Environment.IsDevelopment())
-        {
-            // Load configuration from Azure App Configuration
-
-            services.AddAzureAppConfiguration(config);
-            builder.Configuration.AddUserSecrets(Assembly.GetAssembly(typeof(Program))!);
-        }
 
         var app = builder.Build();
 
