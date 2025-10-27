@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,10 +28,21 @@ public static class Program
         var config = builder.Configuration;
         var services = builder.Services;
 
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Configuration.AddUserSecrets(Assembly.GetAssembly(typeof(Program))!);
-        }
+        // NOTE: When using ConfigureFunctionsWebApplication, both local.settings.json and User Secrets
+        // are automatically added to the configuration. However, there is a bug
+        // https://github.com/Azure/azure-functions-dotnet-worker/issues/2230
+        // where the order of configuration providers is incorrect, causing User Secrets
+        // overriden by local.settings.json values. The work around is
+        // to not define configuration in local.settings.json when using User Secrets.
+
+        // Also, there is no need to manually add the following as they are added automatically
+        // by ConfigureFunctionsWebApplication. Follwoing code is just left here for reference.
+
+        ///if (builder.Environment.IsDevelopment())
+        ///{
+        ///    config.AddJsonFile("local.settings.json", optional: true, reloadOnChange: true);
+        ///    config.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
+        ///}
 
         if (!builder.Environment.IsDevelopment())
         {
@@ -41,6 +51,14 @@ public static class Program
         }
 
         config.AddEnvironmentVariables();
+
+        // check if we have configuration strings
+        var harpProjectDataConnString = config.GetConnectionString("HarpProjectDataConnectionString");
+
+        if (string.IsNullOrWhiteSpace(harpProjectDataConnString))
+        {
+            throw new InvalidOperationException("HarpProjectDataConnectionString is not configured.");
+        }
 
         services.AddHeaderPropagation(options => options.Headers.Add(RequestHeadersKeys.CorrelationId));
 
