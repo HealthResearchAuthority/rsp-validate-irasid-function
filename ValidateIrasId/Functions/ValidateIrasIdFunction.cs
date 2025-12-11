@@ -45,7 +45,7 @@ public class ValidateIrasIdFunction(ILogger<ValidateIrasIdFunction> logger, IVal
     [Function("ProjectRecordValidation")]
     public async Task<IActionResult> Run
     (
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "projectrecord/validate")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "projectrecord/validate")] HttpRequest req,
         string? irasId
     )
     {
