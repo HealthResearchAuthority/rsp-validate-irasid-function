@@ -7,5 +7,4 @@ public class HarpProjectRecordDataDTO
     public string? RecName { get; set; }
     public string? ShortProjectTitle { get; set; }
     public string? LongProjectTitle { get; set; }
-    public string? LeadNation { get; set; }
 }

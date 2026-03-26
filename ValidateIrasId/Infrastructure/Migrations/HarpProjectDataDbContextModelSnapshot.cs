@@ -41,9 +41,6 @@ namespace ValidateIrasId.Infrastructure.Migrations
                     b.Property<DateTime>("LastSyncDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("LeadNation")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("RecID")
                         .HasColumnType("int");
 

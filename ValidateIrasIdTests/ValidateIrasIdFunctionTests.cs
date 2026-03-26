@@ -62,8 +62,7 @@ public class ValidateIrasIdFunctionTests : TestServiceBase<ValidateIrasIdFunctio
             RecID = 316,
             RecName = "Test Committee",
             ShortProjectTitle = "Test Study",
-            LongProjectTitle = "Full Research Title Example",
-            LeadNation = "England"
+            LongProjectTitle = "Full Research Title Example"
         };
 
         var serviceMock = Mocker.GetMock<IValidateIrasIdService>();
