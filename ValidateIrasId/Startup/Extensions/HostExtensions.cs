@@ -17,12 +17,14 @@ public static class HostExtensions
     /// <param name="app">The IHost instance</param>
     public static async Task MigrateAndSeedDatabaseAsync(this IHost app)
     {
+        Console.WriteLine("Inside MigrateAndSeedDatabaseAsync");
         var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Startup");
 
         try
         {
             logger.LogInformation("Performing Migrations");
+            Console.WriteLine("Perform MigrateAndSeedDatabaseAsync");
 
             using var scope = app.Services.CreateScope();
 
@@ -30,6 +32,7 @@ public static class HostExtensions
 
             await context.Database.MigrateAsync();
 
+            Console.WriteLine("Completed MigrateAndSeedDatabaseAsync");
             logger.LogInformation("Migrations Completed");
         }
         catch (Exception ex)
