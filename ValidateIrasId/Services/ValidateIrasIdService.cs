@@ -31,8 +31,7 @@ namespace ValidateIrasId.Services
                 RecID = record.RecID,
                 RecName = record.RecName,
                 ShortProjectTitle = record.ShortStudyTitle,
-                LongProjectTitle = record.FullResearchTitle,
-                LeadNation = record.LeadNation
+                LongProjectTitle = record.FullResearchTitle
             };
         }
     }
