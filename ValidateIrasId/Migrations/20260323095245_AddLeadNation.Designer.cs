@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ValidateIrasId.Infrastructure;
 
 #nullable disable
 
-namespace ValidateIrasId.Infrastructure.Migrations
+namespace ValidateIrasId.Migrations
 {
     [DbContext(typeof(HarpProjectDataDbContext))]
-    partial class HarpProjectDataDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260323095245_AddLeadNation")]
+    partial class AddLeadNation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
