@@ -11,5 +11,6 @@
         public DateTime DateRegistered { get; set; }
         public string? FullResearchTitle { get; set; }
         public DateTime LastSyncDate { get; set; }
+        public string? LeadNation { get; set; }
     }
 }
