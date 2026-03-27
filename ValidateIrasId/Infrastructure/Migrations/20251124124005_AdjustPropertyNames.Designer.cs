@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ValidateIrasId.Infrastructure;
 
@@ -11,9 +12,11 @@ using ValidateIrasId.Infrastructure;
 namespace ValidateIrasId.Infrastructure.Migrations
 {
     [DbContext(typeof(HarpProjectDataDbContext))]
-    partial class HarpProjectDataDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124124005_AdjustPropertyNames")]
+    partial class AdjustPropertyNames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

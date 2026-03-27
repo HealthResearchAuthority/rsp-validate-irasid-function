@@ -31,10 +31,10 @@ public class ValidateIrasIdServiceTests
             IrasId = irasId,
             RecID = 1,
             RecName = "Test",
-            ShortStudyTitle = "Short",
+            ShortProjectTitle = "Short",
             StudyDecision = "Approved",
             DateRegistered = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-            FullResearchTitle = "Full Title"
+            FullProjectTitle = "Full Title"
         };
 
         _repositoryMock
@@ -49,8 +49,8 @@ public class ValidateIrasIdServiceTests
         result.IRASID.ShouldBe(record.IrasId);
         result.RecID.ShouldBe(record.RecID);
         result.RecName.ShouldBe(record.RecName);
-        result.ShortProjectTitle.ShouldBe(record.ShortStudyTitle);
-        result.LongProjectTitle.ShouldBe(record.FullResearchTitle);
+        result.ShortProjectTitle.ShouldBe(record.ShortProjectTitle);
+        result.LongProjectTitle.ShouldBe(record.FullProjectTitle);
     }
 
     [Fact]
@@ -77,8 +77,8 @@ public class ValidateIrasIdServiceTests
         var record = new HarpProjectRecord
         {
             IrasId = irasId,
-            FullResearchTitle = "Title",
-            ShortStudyTitle = "Short"
+            FullProjectTitle = "Title",
+            ShortProjectTitle = "Short"
         };
 
         _repositoryMock

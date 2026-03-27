@@ -33,10 +33,10 @@ public class HarpProjectDataRepositoryTests
                 IrasId = 45655,
                 RecID = 789,
                 RecName = "Dr. Test",
-                ShortStudyTitle = "Short Title",
+                ShortProjectTitle = "Short Title",
                 StudyDecision = "Approved",
                 DateRegistered = new DateTime(2023, 5, 10, 0, 0, 0, DateTimeKind.Utc),
-                FullResearchTitle = "Full Title of the Research Study"
+                FullProjectTitle = "Full Title of the Research Study"
             },
             new HarpProjectRecord
             {
@@ -44,10 +44,10 @@ public class HarpProjectDataRepositoryTests
                 IrasId = 99955,
                 RecID = null,
                 RecName = null,
-                ShortStudyTitle = null,
+                ShortProjectTitle = null,
                 StudyDecision = null,
                 DateRegistered = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                FullResearchTitle = null
+                FullProjectTitle = null
             }
         };
 
@@ -67,10 +67,10 @@ public class HarpProjectDataRepositoryTests
         result.IrasId.ShouldBe(45655);
         result.RecID.ShouldBe(789);
         result.RecName.ShouldBe("Dr. Test");
-        result.ShortStudyTitle.ShouldBe("Short Title");
+        result.ShortProjectTitle.ShouldBe("Short Title");
         result.StudyDecision.ShouldBe("Approved");
         result.DateRegistered.ShouldBe(new DateTime(2023, 5, 10, 0, 0, 0, DateTimeKind.Utc));
-        result.FullResearchTitle.ShouldBe("Full Title of the Research Study");
+        result.FullProjectTitle.ShouldBe("Full Title of the Research Study");
     }
 
     [Fact]
@@ -85,10 +85,10 @@ public class HarpProjectDataRepositoryTests
         result.IrasId.ShouldBe(99955);
         result.RecID.ShouldBeNull();
         result.RecName.ShouldBeNull();
-        result.ShortStudyTitle.ShouldBeNull();
+        result.ShortProjectTitle.ShouldBeNull();
         result.StudyDecision.ShouldBeNull();
         result.DateRegistered.ShouldBe(new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-        result.FullResearchTitle.ShouldBeNull();
+        result.FullProjectTitle.ShouldBeNull();
     }
 
     [Fact]
