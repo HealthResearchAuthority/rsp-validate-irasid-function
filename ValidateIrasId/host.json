@@ -8,5 +8,6 @@
       },
       "enableLiveMetricsFilters": true
     }
-  }
+  },
+  "workerStartupTimeout": "00:05:00"
 }

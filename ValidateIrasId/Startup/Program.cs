@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Rsp.ValidateIRASID.Application.Constants;
 using ValidateIrasId.Application.Contracts.Repositories;
 using ValidateIrasId.Application.Contracts.Services;
@@ -77,7 +78,9 @@ public static class Program
 
         var app = builder.Build();
 
+        Console.WriteLine("Before MigrateAndSeedDatabaseAsync");
         await app.MigrateAndSeedDatabaseAsync();
+        Console.WriteLine("After MigrateAndSeedDatabaseAsync");
 
         await app.RunAsync();
     }
