@@ -77,6 +77,14 @@ public class ValidateIrasIdFunction(ILogger<ValidateIrasIdFunction> logger, IVal
             return new NotFoundObjectResult(validationResponse);
         }
 
+        // Invalid state (record exists but data is incomplete)
+        if (projectRecord.LeadNation is null)
+        {
+            logger.LogWarning("Record found for IRAS ID {IrasId} has null LeadNation value.", irasIdValue);
+
+            validationResponse.Error = $"Null 'leadnation' for IRAS ID: {irasId}";
+        }
+
         // On success, include the found record in the response and return 200 OK.
         validationResponse.Data = projectRecord;
 
