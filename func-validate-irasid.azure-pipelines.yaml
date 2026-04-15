@@ -81,6 +81,11 @@ variables:
           "name": "AppSettings__AzureAppConfiguration__IdentityClientID",
           "value": "$(AppConfigurationClientID)",
           "slotSetting": false
+        },
+        {
+          "name": "OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID",
+          "value": "$(ValIRASIDFuncSystemIdentityPrincipalID)",
+          "slotSetting": false
         }
       ]
 
